@@ -1,0 +1,62 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="highlightjs/styles/default.css">
+    <script src='d3/d3.js'></script>
+    <script src='highlightjs/highlight.pack.js'></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script src='swpf.js'></script>
+    <style>
+     .focused {
+	 background: #9bf;
+     }
+     .cnt-bar {
+	 position: absolute;
+	 left: 50%;
+	 background: #ef9;
+	 top: 4px;
+	 bottom: 4px;
+	 border: #777 1px solid;
+	 border-radius: 4px;
+	 /* background: #ef9;
+	    height: 14px;
+	    display: inline-block;
+	    margin-left: 6px;
+	    border-radius: 4px; */
+     }
+     .code-cell {
+     }
+     .cnt-cell{
+	 position: relative;
+     }
+    </style>
+  </head>
+  <body>
+    <div id='navigator'>
+    </div>
+    <div id='codeview' class='swpfview'>
+      <div id='codecnt' style='position:absolute;left:10px; right:49%;overflow:scroll'></div>
+      <div id='asmcnt' style='position:absolute;left:51%; right:10px;overflow:scroll'></div>
+    </div>
+    <div id='counterview' class='swpfview' style='display:none'>
+    </div>
+
+    <script>
+     console.log(d3.select('#navigator'));
+     init_navigator(d3.select('#navigator'));
+
+     var dataframes;
+     var selected_counters = [['CNT_PIPE1_INST', 'AVG'], ['CNT_PIPE1_INST', '0']];
+       fetch('postprocessed.json')
+	 .then(r => r.json())
+	 .then(frames => {
+	   dataframes = frames;
+	   transform_dbg_frame(frames);
+	   split_cu_frame(frames);
+	   //console.log(frames.asm2src);
+	   refresh_code_view(d3.select('#codecnt'), frames, "/home/export/online1/swmore/opensource/swpf-pkg/test_case/test1.c", selected_counters);
+	   refresh_asm_view(d3.select('#asmcnt'), frames, selected_counters);
+	   init_counters_view(d3.select('#counterview'), frames);
+	 });
+    </script>
+  </body>
+</html>

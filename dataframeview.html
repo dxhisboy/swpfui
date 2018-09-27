@@ -1,0 +1,54 @@
+<html>
+  <head>
+    <script src='d3/d3.js'></script>
+  </head>
+  <body>
+    <div id='tables'>
+    </div>
+    <script>
+     fetch('postprocessed.json')
+       .then(r => r.json())
+       .then(frames => {
+	 var begin = new Date().getTime();
+	 d3.select('#tables')
+	   .selectAll('div')
+	   .data(Object.keys(frames))
+	   .enter()
+	   .append(frameid => {
+	     var root = d3.create('div');
+	     var frame = frames[frameid];
+	     root.append('h3').text(frameid);
+	     var table = root.append('table')
+			     .attr('border', 1);
+	     table.append('thead')
+		  .append('tr')
+		  .selectAll('th')
+		  .data(frame.columns)
+		  .enter()
+		  .append('th')
+		  .text(col => {
+		    if (typeof(col) == 'string')
+		      return col;
+		    else
+		      return col.join('\n');
+		  });
+	     table.append('tbody')
+		  .selectAll('tr')
+		  .data(frame.index)
+		  .enter()
+		  .append(idx => {
+		    var row = d3.create('tr');
+		    row.selectAll('tr')
+		       .data(frame.data[idx])
+		       .enter()
+		       .append('td')
+		       .text(d => d);
+		    return row.node();
+		  });
+	     return root.node();
+	   });
+	 console.log(new Date().getTime() - begin);
+       });
+    </script>
+  </body>
+</html>
