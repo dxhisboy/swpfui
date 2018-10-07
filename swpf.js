@@ -1,6 +1,6 @@
 var fadeDuration = 1500;
 var easeOpt = d3.easeLinear;
-var expDigits = 2;
+var expDigits = 1;
 function column_index(frame, col, v){
   var idx = null;
   if (col instanceof Array){
@@ -69,37 +69,24 @@ function toggle_active_loc(loc){
 }
 
 var cur_cu = null;
-var cur_view = null;
+//var cur_view = null;
 function switch_cu(cu){
   refresh_code_view(d3.select('#codecnt'), dataframes, cu, selected_counters);
 }
-
+var cur_view = null;
+var counter_updated = false;
 function switch_view(view){
-  d3.selectAll('.swpfview')
-    .transition(
-      d3.transition()
-	.duration(fadeDuration)
-	.ease(easeOpt))
-    .style('opacity', 0)
-    .on('end', node => {
-      d3.selectAll('.swpfview').style('display', 'none');
-    });
-  d3.selectAll('#' + view)
-    .transition(
-      d3.transition()
-	.duration(fadeDuration)
-	.ease(easeOpt))
-    .delay(fadeDuration)
-    .style('display', 'block')
-    .style('opacity', 1);
-  cur_view = view;
+  //if (view != cur_view){
+  var el = d3.select('#tab-nav').node();
+  var instance = M.Tabs.getInstance(el);
+  instance.select(view);
 }
 
 function focus_cu_line(cu, line){
+  switch_view('codeview');
   if (cu != cur_cu)
     switch_cu(cu);
-  if (cur_view != 'codeview')
-    switch_view('codeview');
+  //if (cur_view != 'codeview')
   if (typeof(line) == 'number')
     toggle_active_loc(mangle_cu_line(cu, line));
   
@@ -205,7 +192,7 @@ function refresh_code_view(root, frames, cu, counters){
 	.append('td')
 	.html((d,i) => {
 	  if (i < 2) return d;
-	  return d.toExponential(expDigits);
+	  return d.toExponential(expDigits).replace('+', '');
 	});
     rows.selectAll('td')
 	.filter((d,i) => i < 2)
@@ -215,7 +202,7 @@ function refresh_code_view(root, frames, cu, counters){
 	.classed('cnt-cell', true)
 	.append('div')
 	.classed('cnt-bar', true)
-    	.style('width', (d,i) => d / cnt_max[i] * 40 + '%');
+    	.style('width', (d,i) => d / cnt_max[i] * 40 + 'px');
 	//.style('right', (d,i) => (1 - d / cnt_max[i]) * 40 + 10 + '%');
     
     code_table.transition(d3.transition()
@@ -231,6 +218,7 @@ function refresh_code_view(root, frames, cu, counters){
 }
 
 function refresh_asm_view(root, frames, counters){
+  console.log(counters);
   var asm_frame = frames['asm_cnt'];
   var asm_div = root;
 
@@ -304,7 +292,7 @@ function refresh_asm_view(root, frames, counters){
 	  .append('td')
   	  .html((d,i) => {
 	    if (i < 2) return d;
-	    return d.toExponential(expDigits);
+	    return d.toExponential(expDigits).replace('+', '');
 	  });
 
   asm_rows.selectAll('td')
@@ -315,26 +303,19 @@ function refresh_asm_view(root, frames, counters){
 	  .classed('cnt-cell', true)
 	  .append('div')
 	  .classed('cnt-bar', true)
-	  .style('width', (d,i) => d / cnt_max[i] * 40 + '%');
+	  .style('width', (d,i) => d / cnt_max[i] * 40 + 'px');
 
-  var btn_last = root.append('i')
-		     .style('position', 'fixed')
-		     .style('bottom', '200px')
-		     .style('right', '20px')
-		     .style('font-size', '3em')
-		     .on('click', d => {
-		       scroll_to_focused_asm('last')
-		     })
-		     .classed('fas fa-arrow-circle-up', true);
-  var btn_next = root.append('i')
-		     .style('position', 'fixed')
-		     .style('bottom', '150px')
-		     .style('right', '20px')
-		     .style('font-size', '3em')
-		     .on('click', d => {
-		       scroll_to_focused_asm('next');
-		     })
-		     .classed('fas fa-arrow-circle-down', true);
+  root.append('div')
+      .classed('fixed-action-btn swpf-asm-btn', true)
+      .selectAll('a')
+      .data([['last', 'keyboard_arrow_up'], ['next', 'keyboard_arrow_down']])
+      .enter()
+      .append('a')
+      .classed('btn-floating btn-large waves-effect', true)
+      .append('i')
+      .classed('material-icons', true)
+      .text(d => d[1])
+      .on('click', d => scroll_to_focused_asm(d[0]));
 
   asm_tab.transition(d3.transition()
 		       .duration(fadeDuration)
@@ -383,12 +364,12 @@ function refresh_sym_view(root, frames, counters){
 			 .on('dblclick', idx => {
 			   var vma = sym_frame.data[idx][SYM_VMA];
 			   var src = frames.vma2src[vma];
+			   console.log(src);
 			   if (src){
 			     var cu = src[0];
 			     var line = src[1];
 			     focus_cu_line(cu, line);
 			   }
-			   //console.log('dbl click', frame);
 			 });
 
   sym_rows.selectAll('td')
@@ -402,7 +383,7 @@ function refresh_sym_view(root, frames, counters){
 	  .append('td')
   	  .html((d,i) => {
 	    if (i < 2) return d;
-	    return d.toExponential(expDigits);
+	    return d.toExponential(expDigits).replace('+', '');
 	  });
 
   sym_rows.selectAll('td')
@@ -413,7 +394,7 @@ function refresh_sym_view(root, frames, counters){
 	  .classed('cnt-cell', true)
 	  .append('div')
 	  .classed('cnt-bar', true)
-  	  .style('width', (d,i) => d / cnt_max[i] * 40 + '%');
+  	  .style('width', (d,i) => d / cnt_max[i] * 40 + 'px');
 
   sym_tab.transition(d3.transition()
 		       .duration(fadeDuration)
@@ -425,7 +406,7 @@ function refresh_sym_view(root, frames, counters){
 
 function init_counters_view(root, frames){
   var asm_frame = frames['asm_cnt'];
-  var cnt_tab = root.append('table').attr('border', 1);
+  //var cnt_tab = root.append('table').attr('border', 1);
   var cnt_used = {};
 
   asm_frame.columns.forEach(r => {
@@ -449,37 +430,44 @@ function init_counters_view(root, frames){
 	return -1;
     });
   }
-  cnt_tab.append('thead').append('tr')
-	 .selectAll('th')
-	 .data(['EVENT', 'SRC'])
-	 .enter()
-	 .append('th')
-	 .text(d => d);
-  var trs = cnt_tab.append('tbody')
-		   .selectAll('tr')
-  		   .data(Object.keys(cnt_used))
-		   .enter()
-		   .append('tr');
+  var cnt_ul = root.append('ul').classed('collapsible', true);
   
-  trs.append('td')
-     .text(d => d);
+  var cnt_li = cnt_ul.selectAll('li')
+		     .data(Object.keys(cnt_used))
+		     .enter()
+		     .append('li');
+  cnt_li.append('div')
+	.classed('collapsible-header', true)
+	.text(d => d);
+  var cnt_body = cnt_li.append('div')
+		       .classed('collapsible-body', true)
+		       .append('div')
+		       .classed('container', true);
+  var cnt_row = cnt_body.append('div').classed('row', true);
+  var cnt_labels = cnt_row.selectAll('label')
+			  .data(d => cnt_used[d].map(s => ({event: d, src: s})))
+			  .enter()
+			  .append('label')
+			  .classed('col s1', true);
+  cnt_labels.append('input')
+	    .attr('type', 'checkbox')
+	    .classed('fill-in', true)
+	    .on('change', (d, i, e) => {
+	      if (e[i].checked){
+		selected_counters.push([d.event, d.src]);
+	      } else {
+		selected_counters = selected_counters.filter(c => c[0] != d.event || c[1] != d.src);
+	      }
+	      counter_updated = true;
+	    });
+  cnt_labels.append('span')
+	    .text(d => d.src);
 
-  var src_td = trs.append('td')
-		  .selectAll('div')
-		  .data(d => cnt_used[d])
-		  .enter()
-		  .append('div')
-  		  .style('width', '60px')
-		  .style('float', 'left')
-		  .text(d => d)
-		  .append('input')
-		  .style('float', 'left')
-		  .attr('type', 'checkbox')
-		  .attr('name', d => d);
+  M.Collapsible.init(cnt_ul.node());
 }
 
 function init_src_view(root, frames){
-  var dir_list = root.append('ul').style('opacity', 0);
+  var dir_list = root.append('ul').style('opacity', 0).classed('collapsible', true);
   var src_map = {};
   Object.keys(frames['cu_src_idx']).forEach(
     path => {
@@ -492,29 +480,30 @@ function init_src_view(root, frames){
     }
   );
 
-  dir_list.selectAll('li')
-	  .data(Object.keys(src_map))
-	  .enter()
-	  .append('li')
-	  .text(d => d)
-	  .classed('dir-li', true)
-	  .on('click', (d,i,n) => {
-	    console.log('dir-li');
-	    console.log(d3.event);
-	    var node = d3.select(n[0]);
-	    node.classed('expanded', !node.classed('expanded'));
-	  })
-	  .append('ul')
-	  .selectAll('li')
-	  .data(d => src_map[d].map(f => {return {'dir': d, 'file': f};}))
-	  .enter()
-	  .append('li')
-	  .on('click', d=> {
-	    cu = d.dir + '/' + d.file;
-	    focus_cu_line(cu);
-	    d3.event.stopPropagation();
-	  })
-	  .text(d => d.file);
+  var dir_lis = dir_list.selectAll('li')
+			.data(Object.keys(src_map))
+			.enter()
+			.append('li');
+  dir_lis.append('div')
+	 .classed('collapsible-header', true)
+	 .text(d => d);
+
+  dir_lis.append('div')
+	 .classed('collapsible-body', true)
+	 .append('ul')
+	 .classed('collection', true)
+	 .selectAll('li')
+	 .data(d => src_map[d].map(f => {return {'dir': d, 'file': f};}))
+	 .enter()
+	 .append('a')
+	 .classed('collection-item', true)
+	 .on('click', d=> {
+	   cu = d.dir + '/' + d.file;
+	   focus_cu_line(cu);
+	   d3.event.stopPropagation();
+	 })
+	 .text(d => d.file);
+  M.Collapsible.init(dir_list.node());
   dir_list.transition(d3.transition()
 		       .duration(fadeDuration)
 		       .ease(easeOpt))
@@ -524,19 +513,35 @@ function init_src_view(root, frames){
 }
 function init_navigator(root){
   console.log(root);
-  root.select('ul')
-      .selectAll('li')
+  root.selectAll('li')
       .data(['codeview', 'counterview', 'funcview', 'srcview'])
       .enter()
       .append('li')
+      .classed('tab', true)
       .append('a')
-      .text(d => d)
-      .on('click', (d, i) => {
-	switch_view(d);
-      });
+      .attr('href', d => '#' + d)
+      .attr('id', d => 'tab-a-' + d)
+      .text(d => d);
+  M.Tabs.init(root.node(),
+	      {
+		duration: 200,
+		onShow: v => {
+		  d3.select(v).selectAll('.swpfwrapper').style('display', 'none');
+		  console.log(cur_view);
+		  if (cur_view == 'counterview' && counter_updated){
+		    refresh_code_view(d3.select('#codecnt'), dataframes, cur_cu, selected_counters);
+		    refresh_asm_view(d3.select('#asmcnt'), dataframes, selected_counters);
+		    refresh_sym_view(d3.select('#symcnt'), dataframes, selected_counters);
+		  }
+		  cur_view = v.id;
+		  if (cur_view == 'counterview'){
+		    counter_updated = false;
+		  }
+		  setTimeout(e => {
+		    d3.select(v).selectAll('.swpfwrapper').style('display', 'block');
+		  }, 400);
+		}
+	      });
 }
 
 
-/* d3.select('#asmcnt').on('scroll', (d, i, e)=>{
- *   console.log(d3.select('#asmcnt').selectAll('.focused').filter(
- *    (r,j,ee)=> ee[0].offsetTop >= e[0].scrollTop + e[0].clientHeight).nodes());})*/

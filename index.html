@@ -1,12 +1,12 @@
 <html>
   <head>
     <link rel='stylesheet' href='highlightjs/styles/default.css'>
-    <link rel='stylesheet' href='fontawesome/css/all.css'>
      <!-- Compiled and minified CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"> -->
+    <link rel="stylesheet" href="materialize.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Compiled and minified JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.js"></script>
             
     <script src='d3/d3.js'></script>
     <script src='highlightjs/highlight.pack.js'></script>
@@ -31,8 +31,6 @@
 	 display: inline-block;
 	 margin-left: 10px;
      }
-     .code-cell {
-     }
      .cnt-cell{
 	 position: relative;
      }
@@ -42,63 +40,139 @@
      .dir-li.expanded>ul{
 	 display: block;
      }
-     .swpfview{
-	 display: none;
+     .swpf-asm-btn{
+	 z-index: 2;
+	 position: absolute;
      }
-     #codecnt{
-	 position:absolute;
-	 left: 10px;
-	 right: 49%;
-	 overflow: scroll;
-	 top: 100px;
-	 bottom: 10px;
-     }
-     #asmcnt{
-	 position:absolute;
-	 left: 51%;
-	 right: 10px;
-	 overflow: scroll;
-	 top: 100px;
-	 bottom: 10px;
+     .swpf-asm-btn > a{
+	 display: block;
+	 margin: 5px;
      }
      .pre-table {
 	 white-space: pre;
 	 user-select: none;
      }
-     .pre-table, th {
+     .pre-table th {
 	 position: sticky;
 	 top: 0px;
 	 background: #FFF;
 	 z-index: 2;
-	 align: center;
+	 text-align: center;
      }
      .pre-table, td {
 	 padding: 5px 5px;
      }
+
+     .wide-container {
+	 width: 90%;
+	 max-width: 1920px;
+     }
+     .fixed-height {
+     }
+     html, body {
+	 height: 100%;
+     }
+     .tabs {
+	 height: 48px;
+     }
+     #swpfmain {
+	 left: 0px;
+	 top: 50px;
+	 bottom: 20px;
+	 right: 0px;
+	 position: absolute;
+     }
+     .swpfsrccntwrapper{
+	 position: relative;
+	 overflow: hidden;
+     }
+     .swpfsrccnt{
+	 overflow: hidden;
+	 height: 100%;
+     }
+     .swpfsrccnt::-webkit-scrollbar{
+	 display: none;
+     }
+     
+     .swpfwrapper {
+	 position: relative;
+     }
+     .scroll-indicator-y {
+	 position: absolute;
+	 width: 5px;
+	 right: 5px;
+	 border-radius: 2.5px;
+	 opacity: 0.5;
+	 background: #000;
+     }
+     .scroll-indicator-x {
+	 position: absolute;
+	 height: 5px;
+	 bottom: 5px;
+	 border-radius: 2.5px;
+	 opacity: 0.5;
+	 background: #000;
+     }
+
     </style>
   </head>
   <body>
-    <nav>
-      <div id='navigator' class='nav-wrapper'>
-	<ul class='right'></ul>
+    <!-- <nav class='blue'>
+	 <div id='navigator' class='nav-wrapper'>
+	 <ul class='right'></ul>
+	 </div>
+	 </nav> -->
+    <!-- <ul class="tabs">
+         <li class="tab col s3"><a href="#test1">Test 1</a></li>
+         <li class="tab col s3"><a class="active" href="#test2">Test 2</a></li>
+         <li class="tab col s3 disabled"><a href="#test3">Disabled Tab</a></li>
+         <li class="tab col s3"><a href="#test4">Test 4</a></li>
+	 </ul> -->
+    <div class='container nav-container'>
+      <ul id='tab-nav' class='tabs'>
+      </ul>
+    </div>
+    <div id='swpfmain'>
+      <div id='codeview' class='swpfview row'>
+	<div class='swpfwrapper wide-container container' style='position:relative;height:100%'>
+	  <div class='row'>
+	    <div class='col s6 z-depth-2 swpfsrccntwrapper'>
+	      <div id='codecnt', class='swpfsrccnt' draggable='true'>
+	      </div>
+	    </div>
+	    <div class='col s6 z-depth-2 swpfsrccntwrapper'>
+	      <div id='asmcnt' class='swpfsrccnt' draggable='true'>
+	      </div>
+	    </div>
+	  </div>
+	</div>
       </div>
-    </nav>
-    <div id='codeview' class='swpfview'>
-      <div id='codecnt'></div>
-      <div id='asmcnt'></div>
-    </div>
-    <div id='counterview' class='swpfview'>
-    </div>
-    <div id='funcview' class='swpfview'>
-    </div>
-    <div id='srcview' class='swpfview'>
+      <div id='counterview' class='swpfview'>
+	<div class='swpfwrapper container'>
+	</div>
+      </div>
+      <div id='funcview' class='swpfview'>
+	<div class='swpfwrapper container'>
+	  <div class='row'>
+	    <div class='col s12 z-depth-2 swpfsrccntwrapper'>
+	      <div id='symcnt' class='swpfsrccnt' draggable='true'>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+      </div>
+      <div id='srcview' class='swpfview'>
+	<div class='swpfwrapper container'>
+	  <!-- <div id='symcnt' class='col s12 z-depth-2 swpfsrccnt'></div> -->
+	</div>
+      </div>
     </div>
     <script>
-     console.log(d3.select('#navigator'));
-     init_navigator(d3.select('#navigator'));
+     //console.log(d3.select('#navigator'));
+     init_navigator(d3.select('#tab-nav'));
      
      var dataframes;
-     var selected_counters = [['CNT_PIPE1_INST', 'AVG'], ['CNT_PIPE1_INST', '0']];
+     var selected_counters = [];
      fetch('postprocessed.json')
        .then(r => r.json())
        .then(frames => {
@@ -107,10 +181,102 @@
 	 split_cu_frame(frames);
 	 refresh_code_view(d3.select('#codecnt'), frames, null, selected_counters);
 	 refresh_asm_view(d3.select('#asmcnt'), frames, selected_counters);
-	 refresh_sym_view(d3.select('#funcview'), frames, selected_counters);
-	 init_counters_view(d3.select('#counterview'), frames);
-	 init_src_view(d3.select('#srcview'), frames);
-	 switch_view('funcview');
+	 refresh_sym_view(d3.select('#symcnt'), frames, selected_counters);
+	 init_counters_view(d3.select('#counterview > .swpfwrapper'), frames);
+	 init_src_view(d3.select('#srcview > .swpfwrapper'), frames);
+	 switch_view('codeview');
+	 function update_scroll_indicator(e) {
+	   //console.log(e, e.parent, ind_y.node());
+	   var d3p = d3.select(e.parentNode);
+	   var ind_x = d3p.select('.scroll-indicator-x');
+	   var ind_y = d3p.select('.scroll-indicator-y');
+
+	   ind_y.style('top', e.scrollTop / e.scrollHeight * 100 + '%');
+	   ind_y.style('bottom', (1 - (e.scrollTop + e.clientHeight) / e.scrollHeight) * 100 + '%');
+	   ind_x.style('left', e.scrollLeft / e.scrollWidth * 100 + '%');
+	   ind_x.style('right', (1 - (e.scrollLeft + e.clientWidth) / e.scrollWidth) * 100 + '%');
+	 }
+	 function show_scroll_indicator(e) {
+	   var d3p = d3.select(e.parentNode);
+	   var ind_x = d3p.select('.scroll-indicator-x');
+	   var ind_y = d3p.select('.scroll-indicator-y');
+	   ind_x.interrupt();
+	   ind_y.interrupt();
+	   ind_x.style('opacity', 1);
+	   ind_y.style('opacity', 1);	   
+	 }
+	 function hide_scroll_indicator(e) {
+	   var d3p = d3.select(e.parentNode);
+	   var ind_x = d3p.select('.scroll-indicator-x');
+	   var ind_y = d3p.select('.scroll-indicator-y');
+	   
+	   ind_x.transition(d3.transition()
+		       .duration(fadeDuration)
+			      .ease(easeOpt))
+		.style('opacity', 0);
+	   ind_y.transition(d3.transition()
+			      .duration(fadeDuration)
+			      .ease(easeOpt))
+		.style('opacity', 0);	   
+	 }
+	 d3.selectAll('.swpfsrccnt')
+	   .data([{}, {}, {}])
+	   .on('wheel', (d, i, e) => {
+	     show_scroll_indicator(e[i]);
+	     var table = d3.select(e[i]).select('table').node();
+	     e[i].scrollBy({top: d3.event.deltaY});
+	     hide_scroll_indicator(e[i]);
+	   })
+	   .on('mousedown', (d, i, e) => {
+	     d3.event.preventDefault();
+	     d.x = d3.event.screenX;
+	     d.y = d3.event.screenY;
+	     //console.log('down');
+	     d.active = true;
+	     d.dragged = false;
+	     d.preventclick = false;
+	     show_scroll_indicator(e[i]);
+	   }, true)
+	   .on('mousemove', (d, i, e) => {
+	     if (d.active){
+	       var table = d3.select(e[i]).select('table').node();
+	       e[i].scrollBy({top: d.y - d3.event.screenY, left: d.x - d3.event.screenX});
+	       if (Math.abs(d.y - d3.event.screenY) + Math.abs(d.x - d3.event.screenX) > 3){
+		 d.dragged = true;
+	       }
+	       d.x = d3.event.screenX;
+	       d.y = d3.event.screenY;
+	     }
+	     //console.log('move', d);
+	   })
+	   .on('mouseup mouseleave', (d, i, e) => {
+	     //console.log('up', d);
+	     if (d.dragged){
+	       d.preventclick = true;
+	       d3.event.preventDefault();
+	       d3.event.stopPropagation();
+	       hide_scroll_indicator(e[i]);
+	     }
+	     d.dragged = false;
+	     d.active = false;
+	   })
+	   .on('click', (d, i, e) => {
+	     //console.log('click', d);
+	     if (d.preventclick){
+	       d3.event.preventDefault();
+	       d3.event.stopPropagation();
+	       d.preventclick = false;
+	     }
+	   }, true)
+	   .on('scroll', (d,i,e) => {
+	     update_scroll_indicator(e[i]);
+	   });
+	 d3.selectAll('.swpfsrccntwrapper')
+	   .append('div')
+	   .classed('scroll-indicator-x', true);
+	 d3.selectAll('.swpfsrccntwrapper')
+	   .append('div')
+	   .classed('scroll-indicator-y', true);
        });
     </script>
   </body>
